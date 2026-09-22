@@ -1,3 +1,4 @@
+#main entry point
 print("=================================")
 print("   STUDENT MANAGEMENT SYSTEM")
 print("=================================")
