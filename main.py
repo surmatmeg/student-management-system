@@ -1,34 +1,92 @@
-#main entry point
-print("=================================")
-print("   STUDENT MANAGEMENT SYSTEM")
-print("=================================")
+from database import delete_student, load_students, save_students, search_student
 
-students = []
 
-while True:
-    print("\n1. Add Student")
-    print("2. View Students")
-    print("3. Exit")
+def get_valid_age():
+  """Helper function to keep asking until the user enters a valid positive age."""
+  while True:
+    age_input = input("Enter student age: ").strip()
+    if age_input.isdigit() and int(age_input) > 0:
+      return int(age_input)
+    print("⚠️ Invalid age! Please enter a positive number (e.g., 20).")
 
-    choice = input("\nEnter choice: ")
+
+def get_valid_name():
+  """Helper function to keep asking until the user enters a non-empty name."""
+  while True:
+    name_input = input("Enter student name: ").strip()
+    if name_input:
+      return name_input
+    print("⚠️ Name cannot be blank! Please enter a valid name.")
+
+
+def main():
+  students = load_students()
+
+  while True:
+    print("\n==============================")
+    print("   STUDENT MANAGEMENT SYSTEM  ")
+    print("==============================")
+    print("1. Add Student")
+    print("2. View All Students")
+    print("3. Search Student")
+    print("4. Delete Student")
+    print("5. Exit")
+
+    choice = input("\nEnter choice (1-5): ").strip()
 
     if choice == "1":
-        name = input("Enter student name: ")
-        age = input("Enter student age: ")
-        students.append({"name": name, "age": age})
-        print("Student added successfully!")
+      name = get_valid_name()
+      age = get_valid_age()
+
+      # Generate unique ID based on existing max ID
+      new_id = max([s["id"] for s in students], default=0) + 1
+      new_student = {"id": new_id, "name": name, "age": age}
+
+      students.append(new_student)
+      save_students(students)
+      print(
+          f"✅ Success: '{name}' added with ID #{new_id}!"
+      )
 
     elif choice == "2":
-        if len(students) == 0:
-            print("No students found.")
-        else:
-            print("\nList of Students:")
-            for i, student in enumerate(students, start=1):
-                print(f"{i}. {student['name']} - Age {student['age']}")
+      students = load_students()
+      if not students:
+        print("⚠️ No student records found.")
+      else:
+        print("\n--- List of Students ---")
+        for s in students:
+          print(f"ID: {s['id']} | Name: {s['name']} | Age: {s['age']}")
 
     elif choice == "3":
-        print("Exiting system... Goodbye!")
-        break
+      query = input("Enter student name or ID to search: ").strip()
+      results = search_student(query)
 
+      if not results:
+        print(f"⚠️ No records matching '{query}'.")
+      else:
+        print(f"\n--- Search Results for '{query}' ---")
+        for s in results:
+          print(f"ID: {s['id']} | Name: {s['name']} | Age: {s['age']}")
+
+    elif choice == "4":
+      id_input = input("Enter student ID to delete: ").strip()
+      if not id_input.isdigit():
+        print("⚠️ Please enter a valid numeric ID.")
+        continue
+
+      student_id = int(id_input)
+      if delete_student(student_id):
+        students = load_students()  # Refresh local list
+        print(f"✅ Student ID #{student_id} deleted successfully!")
+      else:
+        print(f"⚠️ Student ID #{student_id} not found.")
+
+    elif choice == "5":
+      print("Exiting system. Goodbye!")
+      break
     else:
-        print("Invalid choice. Try again.")
+      print("⚠️ Invalid choice. Please enter a number between 1 and 5.")
+
+
+if __name__ == "__main__":
+  main()
