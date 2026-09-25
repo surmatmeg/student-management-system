@@ -1,48 +1,49 @@
-import json
-import os
+import sqlite3
 
-FILE_NAME = "students.json"
+DB_NAME = "students.db"
 
+def connect_db():
+    return sqlite3.connect(DB_NAME)
 
-def load_students():
-  """Loads students from the JSON file."""
-  if not os.path.exists(FILE_NAME):
-    return []
-  with open(FILE_NAME, "r") as file:
-    return json.load(file)
+def initialize_db():
+    """Creates the 'students' table if it doesn't exist."""
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS students (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                age INTEGER NOT NULL,
+                grade TEXT NOT NULL
+            )
+        """)
+        conn.commit()
 
+def add_student(name: str, age: int, grade: str) -> int:
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO students (name, age, grade) VALUES (?, ?, ?)",
+            (name, age, grade)
+        )
+        conn.commit()
+        return cursor.lastrowid
 
-def save_students(students):
-  """Saves the student list into the JSON file."""
-  with open(FILE_NAME, "w") as file:
-    json.dump(students, file, indent=4)
+def get_all_students() -> list:
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, age, grade FROM students")
+        return cursor.fetchall()
 
+def search_student(student_id: int):
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, age, grade FROM students WHERE id = ?", (student_id,))
+        return cursor.fetchone()
 
-def search_student(query):
-  """Searches for students by name or ID."""
-  students = load_students()
-  results = []
-  query_str = str(query).lower()
-
-  for student in students:
-    if query_str in str(student["id"]) or query_str in student["name"].lower():
-      results.append(student)
-
-  return results
-
-
-def delete_student(student_id):
-  """Deletes a student by ID.
-
-  Returns True if deleted, False if not found.
-  """
-  students = load_students()
-  initial_length = len(students)
-
-  # Keep all students EXCEPT the one with the matching ID
-  updated_students = [s for s in students if s["id"] != student_id]
-
-  if len(updated_students) < initial_length:
-    save_students(updated_students)
-    return True
-  return False
+def delete_student(student_id: int) -> bool:
+    with connect_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM students WHERE id = ?", (student_id,))
+        conn.commit()
+        return cursor.rowcount > 0

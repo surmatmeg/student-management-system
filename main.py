@@ -1,4 +1,10 @@
-from database import delete_student, load_students, save_students, search_student
+from database import (
+    add_student,
+    delete_student,
+    init_db,
+    load_students,
+    search_student,
+)
 
 
 def get_valid_age():
@@ -20,7 +26,7 @@ def get_valid_name():
 
 
 def main():
-  students = load_students()
+  init_db()  # Initialize SQLite table on application launch
 
   while True:
     print("\n==============================")
@@ -37,16 +43,8 @@ def main():
     if choice == "1":
       name = get_valid_name()
       age = get_valid_age()
-
-      # Generate unique ID based on existing max ID
-      new_id = max([s["id"] for s in students], default=0) + 1
-      new_student = {"id": new_id, "name": name, "age": age}
-
-      students.append(new_student)
-      save_students(students)
-      print(
-          f"✅ Success: '{name}' added with ID #{new_id}!"
-      )
+      new_id = add_student(name, age)
+      print(f"✅ Success: '{name}' added with ID #{new_id} in SQLite database!")
 
     elif choice == "2":
       students = load_students()
@@ -76,7 +74,6 @@ def main():
 
       student_id = int(id_input)
       if delete_student(student_id):
-        students = load_students()  # Refresh local list
         print(f"✅ Student ID #{student_id} deleted successfully!")
       else:
         print(f"⚠️ Student ID #{student_id} not found.")
