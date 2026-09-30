@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 import database
 
+
+
 app = Flask(__name__)
 
 # Ensure the database table exists when starting the web app
@@ -29,7 +31,19 @@ def delete(student_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
-    @app.route('/search')
+
+
+@app.route('/search')
+
 def search():
-    # Placeholder for student search implementation
-    return "Search page coming soon!"
+    query = request.args.get('q', '')
+    results = []
+    if query:
+        conn = get_db_connection()
+        results = conn.execute(
+            "SELECT * FROM students WHERE name LIKE ?", 
+            (f'%{query}%',)
+        ).fetchall()
+        conn.close()
+    return render_template('search.html', results=results, query=query)
+    
