@@ -22,3 +22,13 @@ A lightweight, console-based Student Management System built in Python with loca
    ```bash
    git clone [https://github.com/surmatmeg/student-management-system.git](https://github.com/surmatmeg/student-management-system.git)
    cd student-management-system
+   ## Tech Stack
+* **Language:** Python 3
+* **Web Framework:** Flask
+* **Database:** SQLite3
+* **Testing:** unittest
+
+## Quick Start
+1. Clone the repository:
+   ```bash
+   git clone <YOUR_GITHUB_REPO_URL>
