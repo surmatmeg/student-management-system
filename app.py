@@ -29,3 +29,7 @@ def delete(student_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+    @app.route('/search')
+def search():
+    # Placeholder for student search implementation
+    return "Search page coming soon!"
